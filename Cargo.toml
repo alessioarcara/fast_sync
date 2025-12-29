@@ -1,0 +1,18 @@
+[package]
+name = "fast_sync"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.100"
+clap = { version = "4.5.53", features = ["derive"] }
+jwalk = "0.8.1"
+mimalloc = "0.1.48"
+rayon = "1.11.0"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
