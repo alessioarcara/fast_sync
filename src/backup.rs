@@ -1,10 +1,14 @@
 use anyhow::{Ok, Result};
 use jwalk::WalkDir;
 use rayon::prelude::*;
-use std::{fs, path::Path, time::SystemTime};
+use std::{
+    fs::{self},
+    path::Path,
+    time::SystemTime,
+};
 
-pub fn sync_recursive(source: &Path, dest: &Path) -> Result<()> {
-    WalkDir::new(source)
+pub fn sync_recursive(src: &Path, dst: &Path) -> Result<()> {
+    WalkDir::new(src)
         .follow_links(false)
         .skip_hidden(false)
         .sort(false)
@@ -12,7 +16,7 @@ pub fn sync_recursive(source: &Path, dest: &Path) -> Result<()> {
         .into_iter()
         .par_bridge()
         .for_each(|entry| {
-            if let Err(e) = process_copy_entry(entry, &source, &dest) {
+            if let Err(e) = process_copy_entry(entry, &src, &dst) {
                 eprintln!("⚠️  Errore file: {}", e);
             }
         });
@@ -20,10 +24,14 @@ pub fn sync_recursive(source: &Path, dest: &Path) -> Result<()> {
     Ok(())
 }
 
+pub fn compress_recursive(src: &Path, dst: &Path) -> Result<()> {
+    Ok(())
+}
+
 fn process_copy_entry(
     entry: std::result::Result<jwalk::DirEntry<((), ())>, jwalk::Error>,
-    source_root: &Path,
-    dest_root: &Path,
+    src: &Path,
+    dst: &Path,
 ) -> Result<()> {
     let entry = entry?;
     if !entry.file_type().is_file() {
@@ -31,8 +39,8 @@ fn process_copy_entry(
     }
 
     let src_path = entry.path();
-    let relative_path = src_path.strip_prefix(source_root)?;
-    let dest_path = dest_root.join(relative_path);
+    let relative_path = src_path.strip_prefix(src)?;
+    let dest_path = dst.join(relative_path);
 
     let src_meta = entry.metadata()?;
 
